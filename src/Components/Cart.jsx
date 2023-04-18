@@ -8,6 +8,8 @@ const Cart = () => {
   const [material, setMaterial] = useState('');
   const [forma, setForma] = useState('');
   const [tipo, setTipo] = useState('');
+  const [precio, setPrecio] = useState(0);
+  const [moneda, setMoneda] = useState('pesos');
 
   useEffect(() => {
     const obtenerDatos = async () => {
@@ -27,20 +29,26 @@ const Cart = () => {
     const data = await addDoc(collection(db, 'productos'), {
       material: material,
       forma: forma,
-      tipo: tipo
+      tipo: tipo,
+      precio: precio,
+      moneda: moneda
     })
     setProductos(
       [...productos, {
         id: data.id,
         material: material,
         forma: forma,
-        tipo: tipo
+        tipo: tipo,
+        precio: precio,
+        moneda: moneda
       }]
     )
 
     setMaterial('');
     setForma('');
     setTipo('');
+    setPrecio(0);
+    setMoneda('pesos');
     await onSnapshot(collection(db, 'productos'), (query) => {
       setProductos(query.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     })
@@ -54,6 +62,26 @@ const Cart = () => {
     }
   };
 
+  const handlePrecioChange = (e) => {
+    const precio = Number(e.target.value);
+    if (moneda === 'dolares') {
+      setPrecio(precio * 5000);
+    } else {
+      setPrecio(precio);
+    }
+  }
+
+  const handleMonedaChange = (e) => {
+    const moneda = e.target.value;
+    if (moneda === 'dolares') {
+      setPrecio(precio / 5000);
+      setMoneda('dolares');
+    } else {
+      setPrecio(precio * 5000);
+      setMoneda('pesos');
+    }
+  }
+  
   return (
     <div>
       <br></br>
@@ -123,5 +151,4 @@ const Cart = () => {
     </div>
   );
 }
-
 export default Cart;
