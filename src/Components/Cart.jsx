@@ -1,6 +1,6 @@
-import React, { useState} from 'react'
+import React, { useState, useEffect } from 'react'
 import { db } from '../firebase.js'
-import { collection, onSnapshot, addDoc} from 'firebase/firestore'
+import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore'
 
 const Cart = () => {
 
@@ -8,6 +8,19 @@ const Cart = () => {
   const [material, setMaterial] = useState('');
   const [forma, setForma] = useState('');
   const [tipo, setTipo] = useState('');
+
+  useEffect(() => {
+    const obtenerDatos = async () => {
+      try {
+        await onSnapshot(collection(db, 'productos'), (query) => {
+          setProductos(query.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    obtenerDatos();
+  }, [])
 
   const agregarProducto = async (e) => {
     e.preventDefault();
@@ -32,6 +45,14 @@ const Cart = () => {
     await onSnapshot(collection(db, 'productos'), (query) => {
       setProductos(query.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     })
+  };
+
+  const eliminarProducto = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'productos', id))
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   return (
@@ -73,6 +94,9 @@ const Cart = () => {
               <td>{producto.material}</td>
               <td>{producto.forma}</td>
               <td>{producto.tipo}</td>
+              <td>
+                <button onClick={() => eliminarProducto(producto.id)}>Eliminar</button>
+              </td>
             </tr>
           ))}
         </tbody>
