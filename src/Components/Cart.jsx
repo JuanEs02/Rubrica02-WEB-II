@@ -8,7 +8,8 @@ const Cart = () => {
   const [material, setMaterial] = useState('');
   const [forma, setForma] = useState('');
   const [tipo, setTipo] = useState('');
-  const [tipoMoneda, setTipoMoneda] = useState(true);
+  const [tipoMoneda, setTipoMoneda] = useState("USD");
+  const [precio, setPrecio] = useState(0);
 
   useEffect(() => {
     const obtenerDatos = async () => {
@@ -23,28 +24,71 @@ const Cart = () => {
     obtenerDatos();
   }, [])
 
-  const calcularPrecio = (precio, tipoMoneda) => {
-    if (tipoMoneda) {
-      return precio;
-    } else {
-      return precio * 5000;
+  function precioP() {
+    if (material && forma && tipo) {
+      if (material === 'Cuero') {
+        if (forma === 'Martillo') {
+          if (tipo === 'Oro' || tipo === 'Oro rosado') {
+            return 100
+          } else if (tipo === 'Plata') {
+            console.log("Cuero Martillo y plata")
+            return 80
+          } else if (tipo === 'Niquel') {
+            return 70
+          }
+        } else if (forma === 'Ancla') {
+          if (tipo === 'Oro' || tipo === 'Oro rosado') {
+            return 120
+          } else if (tipo === 'Plata') {
+            return 100
+          } else if (tipo === 'Niquel') {
+            return 90
+          }
+        }
+      } else if (material === 'Cuerda') {
+        if (forma === 'Martillo') {
+          if (tipo === 'Oro' || tipo === 'Oro rosado') {
+            return 90
+          } else if (tipo === 'Plata') {
+            return 70
+          } else if (tipo === 'Niquel') {
+            return 50
+          }
+        } else if (forma === 'Ancla') {
+          if (tipo === 'Oro' || tipo === 'Oro rosado') {
+            return 110
+          } else if (tipo === 'Plata') {
+            return 90
+          } else if (tipo === 'Niquel') {
+            return 80
+          }
+        }
+      }
     }
-  };
+  }
+
 
   const agregarProducto = async (e) => {
     e.preventDefault();
+
+    const precioActual = precioP()
     const data = await addDoc(collection(db, 'productos'), {
       material: material,
       forma: forma,
       tipo: tipo,
+      precio: precioActual,
       tipom: tipoMoneda
     })
+
+    console.log(precio)
+
     setProductos(
       [...productos, {
         id: data.id,
         material: material,
         forma: forma,
         tipo: tipo,
+        precio: precioActual,
         tipom: tipoMoneda
       }]
     )
@@ -52,6 +96,7 @@ const Cart = () => {
     setMaterial('');
     setForma('');
     setTipo('');
+    setPrecio(0);
     setTipoMoneda(true)
     await onSnapshot(collection(db, 'productos'), (query) => {
       setProductos(query.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
@@ -71,7 +116,7 @@ const Cart = () => {
       <br></br>
       <h2 className='text-center text-light'>Compra tu Manilla</h2>
       <br></br>
-      <div className="container text-center">
+      <div className="container text-center text-light">
         <div className="row align-items-start">
           <div className="col-6">
             <form onSubmit={agregarProducto}>
@@ -81,22 +126,27 @@ const Cart = () => {
                 <option value="Cuero">Cuero</option>
                 <option value="Cuerda">Cuerda</option>
               </select>
-              <label htmlFor="forma-select">Seleccione la forma</label>
+              <label htmlFor="forma-select ">Seleccione la forma</label>
               <select id="forma-select" className="form-select mb-3" value={forma} onChange={(e) => setForma(e.target.value)}>
                 <option value="">Seleccione la forma</option>
                 <option value="Martillo">Martillo</option>
                 <option value="Ancla">Ancla</option>
               </select>
-              <label htmlFor="tipo-select">Seleccione el tipo</label>
+              <label htmlFor="tipo-select ">Seleccione el tipo</label>
               <select id="tipo-select" className="form-select mb-3" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                 <option value="">Seleccione el tipo</option>
                 <option value="Oro">Oro</option>
                 <option value="Plata">Plata</option>
                 <option value="Niquel">Niquel</option>
               </select>
-              <input type="checkbox" checked={tipoMoneda} onChange={(e) => setTipoMoneda(e.target.checked)} />
-              Pago en dólares
+              <div className="col-12 text-light">
+                <input type="checkbox" checked={tipoMoneda} onChange={(e) => setTipoMoneda(e.target.checked)} />
+                Pago en dólares
+              </div>
+              <br></br>
+              <div className="col-12 text-light">
               <button type="submit" className="btn btn-primary">Agregar</button>
+              </div>
             </form>
           </div>
           <div className="col-6">
@@ -115,6 +165,7 @@ const Cart = () => {
                   <th>Material</th>
                   <th>Forma</th>
                   <th>Tipo</th>
+                  <th>Precio</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -124,8 +175,9 @@ const Cart = () => {
                     <td>{producto.material}</td>
                     <td>{producto.forma}</td>
                     <td>{producto.tipo}</td>
-                    <td>{producto.precio} {tipoMoneda ? 'USD' : 'COP'}</td>
-
+                    {
+                      tipoMoneda ? <td>{producto.precio} USD </td> : <td>{producto.precio * 5000} COP </td>
+                    }
                     <td>
                       <button className="btn btn-danger" onClick={() => eliminarProducto(producto.id)}>Eliminar</button>
                     </td>
