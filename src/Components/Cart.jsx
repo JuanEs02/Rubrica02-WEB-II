@@ -3,13 +3,13 @@ import { db } from '../firebase.js'
 import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore'
 
 const Cart = () => {
-
+  
   const [productos, setProductos] = useState([]);
-  const [material, setMaterial] = useState('');
-  const [forma, setForma] = useState('');
-  const [tipo, setTipo] = useState('');
+  const [material, setMaterial] = useState('Cuero');
+  const [forma, setForma] = useState('Martillo');
+  const [tipo, setTipo] = useState('Oro');
   const [tipoMoneda, setTipoMoneda] = useState("USD");
-  const [precio, setPrecio] = useState(0);
+  const [, setPrecio] = useState(0);
 
   useEffect(() => {
     const obtenerDatos = async () => {
@@ -67,40 +67,40 @@ const Cart = () => {
     }
   }
 
-
   const agregarProducto = async (e) => {
     e.preventDefault();
-
-    const precioActual = precioP()
-    const data = await addDoc(collection(db, 'productos'), {
-      material: material,
-      forma: forma,
-      tipo: tipo,
-      precio: precioActual,
-      tipom: tipoMoneda
-    })
-
-    console.log(precio)
-
-    setProductos(
-      [...productos, {
-        id: data.id,
+    try {
+      const precioActual = precioP()
+      const data = await addDoc(collection(db, 'productos'), {
         material: material,
         forma: forma,
         tipo: tipo,
         precio: precioActual,
         tipom: tipoMoneda
-      }]
-    )
+      })
 
-    setMaterial('');
-    setForma('');
-    setTipo('');
-    setPrecio(0);
-    setTipoMoneda(true)
-    await onSnapshot(collection(db, 'productos'), (query) => {
-      setProductos(query.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
-    })
+      setProductos(
+        [...productos, {
+          id: data.id,
+          material: material,
+          forma: forma,
+          tipo: tipo,
+          precio: precioActual,
+          tipom: tipoMoneda
+        }]
+      )
+
+      setMaterial('Cuero');
+      setForma('Martillo');
+      setTipo('oro');
+      setPrecio(0);
+      setTipoMoneda(true)
+      await onSnapshot(collection(db, 'productos'), (query) => {
+        setProductos(query.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
+      })
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   const eliminarProducto = async (id) => {
@@ -112,6 +112,7 @@ const Cart = () => {
   };
 
   return (
+
     <div>
       <br></br>
       <h2 className='text-center text-light'>Compra tu Manilla</h2>
@@ -122,19 +123,16 @@ const Cart = () => {
             <form onSubmit={agregarProducto}>
               <label htmlFor="material-select">Seleccione el material</label>
               <select id="material-select" className="form-select mb-3" value={material} onChange={(e) => setMaterial(e.target.value)}>
-                <option value="">Seleccione el material</option>
                 <option value="Cuero">Cuero</option>
                 <option value="Cuerda">Cuerda</option>
               </select>
               <label htmlFor="forma-select ">Seleccione la forma</label>
               <select id="forma-select" className="form-select mb-3" value={forma} onChange={(e) => setForma(e.target.value)}>
-                <option value="">Seleccione la forma</option>
                 <option value="Martillo">Martillo</option>
                 <option value="Ancla">Ancla</option>
               </select>
               <label htmlFor="tipo-select ">Seleccione el tipo</label>
               <select id="tipo-select" className="form-select mb-3" value={tipo} onChange={(e) => setTipo(e.target.value)}>
-                <option value="">Seleccione el tipo</option>
                 <option value="Oro">Oro</option>
                 <option value="Plata">Plata</option>
                 <option value="Niquel">Niquel</option>
@@ -145,12 +143,12 @@ const Cart = () => {
               </div>
               <br></br>
               <div className="col-12 text-light">
-              <button type="submit" className="btn btn-primary">Agregar</button>
+                <button type="submit" className="btn btn-primary">Agregar</button>
               </div>
             </form>
           </div>
           <div className="col-6">
-            <img src="https://ae01.alicdn.com/kf/HTB1fVX1QVXXXXbtXXXXq6xXFXXXu/123682848/HTB1fVX1QVXXXXbtXXXXq6xXFXXXu.jpg" alt="Ejemplo_Venta" className="img-fluid" />
+            <img src="https://ae01.alicdn.com/kf/HTB1fVX1QVXXXXbtXXXXq6xXFXXXu/123682848/HTB1fVX1QVXXXXbtXXXXq6xXFXXXu.jpg" alt="Ejemplo_Venta" className="rounded mx-auto d-block col-6"/>
           </div>
         </div>
       </div>
@@ -189,6 +187,7 @@ const Cart = () => {
         </div>
       </div>
     </div>
+
   );
 }
 export default Cart;
